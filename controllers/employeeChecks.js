@@ -44,11 +44,17 @@ exports.update = async (req, res, next) => {
             return res.status(404).json({ message: "Employee n'existe pas!" });
         }
 
-        // Recherche de l'EmployeeCheck associé à l'employé
-        const employeecheck = await EmployeeCheck.findOne({ where: { employeeId: employeeId } });
-        if (!employeecheck) {
-            return res.status(404).json({ message: "EmployeeCheck n'existe pas!" });
+        // Recherche des EmployeeCheck associés à l'employé, triés par ordre décroissant de date
+        const employeechecks = await EmployeeCheck.findAll({
+            where: { employeeId: employeeId },
+            order: [['checkin', 'DESC']], // Triez par date de checkin en ordre décroissant
+        });
+
+        if (!employeechecks || employeechecks.length === 0) {
+            return res.status(404).json({ message: "Aucun EmployeeCheck trouvé pour cet employeeId!" });
         }
+
+        const employeecheck = employeechecks[0]; 
 
         const checkOutTime = new Date();
         const updateComment = req.body.comment;
